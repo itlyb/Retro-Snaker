@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		table,tr,td {
+			border-collapse: collapse;
+			border: 1px solid #333;
+		}
+		table {
+			margin: 0 auto;
+		}
+		td {
+			width: 20px;
+			height: 20px;
+			text-align: center;
+			line-height: 20px;
+		}
+		body {
+			text-align: center;
+		}
+	</style>
+</head>
+<body>
+	
+</body>
+</html>
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script>
+	var score = 0;
+	// 页面输入地图
+	document.write("<h1>Score: &nbsp; <span id='score' >"+score+" </span> </h1>");
+	document.write("<table>");
+	for(var i = 1;i<=30;i++)
+	{
+		document.write("<tr>");
+		for(var k = 1;k<=30;k++)
+		{
+			document.write("<td id='"+i+"-"+k+"' >"+k+"</td>");
+		}
+		document.write("</tr>");
+	}
+	document.write("</table>");
+
+	// 生成随机数函数
+	function randomNum(minNum,maxNum){ 
+	    switch(arguments.length){ 
+	        case 1: 
+	            return parseInt(Math.random()*minNum+1,10); 
+	        break; 
+	        case 2: 
+	            return parseInt(Math.random()*(maxNum-minNum+1)+minNum,10); 
+	        break; 
+	            default: 
+	                return 0; 
+	            break; 
+	    } 
+	} 
+
+
+	// 创建食物地址
+	function food_create()
+	{
+		var num1 = randomNum(1,30);
+		var num2 = randomNum(1,30);
+		return num1+"-"+num2;
+	}
+	// 渲染食物
+	function food_show(num)
+	{
+		var td = document.getElementById(num);
+		td.style.backgroundColor = 'skyblue';
+	}
+	// 初始化生成食物
+	var num = food_create();
+	food_show(num);
+
+	// 初始化 蛇的位置信息 
+	var address = [[1,3],[1,2],[1,1]];
+
+	// 蛇的显示
+	function snake_show()
+	{
+		for(var i = 0;i<address.length;i++)
+		{
+			var td = document.getElementById(address[i][0]+"-"+address[i][1]);
+			if(!td)
+			{
+				alert('撞墙了');
+				location.reload();
+			}
+			td.style.backgroundColor = 'red';
+		}			
+	}
+	// 初始化显示蛇
+	snake_show();
+
+
+	// 把除了蛇和食物的地方渲染成白色
+	function turn_white(num)
+	{
+		$("td").css({"background-color":"white"});
+		snake_show();
+		food_show(num);
+	}
+
+	// 移动函数 start---------------------------------------------------------
+	function left()
+	{
+			address.pop();
+			address.unshift([address[0][0],address[0][1]-1]);
+			turn_white(num);
+	}
+
+	function right()
+	{
+			address.pop();
+			address.unshift([address[0][0],address[0][1]+1]);
+			turn_white(num);
+	}
+
+	function up()
+	{
+			address.pop();
+			address.unshift([address[0][0]-1,address[0][1]]);
+			turn_white(num);
+	}
+
+	function down()
+	{
+			address.pop();
+			address.unshift([address[0][0]+1,address[0][1]]);
+			turn_white(num);
+	}
+	// 移动函数 end--------------------------------------------
+
+	// 初始化 方向值
+	var direct = null;
+
+	// 键盘 方向按键 监听
+	$(document).keydown(function(event){
+　　　　if(event.keyCode == 37){
+			left();
+			run(left);
+			direct = 'left';
+　　　　}
+	   if(event.keyCode == 38){
+	   		up();
+ 			run(up);
+ 			direct = 'up';
+　　　　}	
+		if(event.keyCode == 39){
+			right();
+			run(right);
+			direct = 'right';
+　　　　}
+		if(event.keyCode == 40){
+			down();
+			run(down);
+			direct = 'down';
+　　　　}
+　　});
+	
+	
+
+	// setInterval(right,300);
+
+	
+	var setInt = setInterval(function(){},1000);
+
+
+	function run(fun)
+	{	
+    	window.clearTimeout(setInt); 
+		setInt = setInterval(fun,100);
+	}
+	
+
+	// 如果迟到事食物
+	setInterval(function(){
+		if(num == address[0][0]+"-"+address[0][1])
+		{	
+			score += 1;
+			$('#score').html(score);
+			if(direct=='left')
+			{
+				address.unshift([address[0][0],address[0][1]-1]);
+				num = food_create();
+				turn_white(num);
+			}
+			if(direct=='right')
+			{
+				address.unshift([address[0][0],address[0][1]+1]);
+				num = food_create();
+				turn_white(num);
+			}	
+			if(direct=='up')
+			{
+				address.unshift([address[0][0]-1,address[0][1]]);
+				num = food_create();
+				turn_white(num);
+			}
+			if(direct=='down')
+			{
+				address.unshift([address[0][0]+1,address[0][1]]);
+				num = food_create();
+				turn_white(num);
+			}
+
+			
+		}
+	},10);
+
+
+
+	// 咬到自己判断
+	setInterval(function(){
+		for(var i=1;i<address.length;i++){
+			if(address[0][0] == address[i][0] && address[0][1] == address[i][1])
+			{
+				if(i==2){
+					address.reverse();
+					if(address[0][0] == address[1][0])
+					{
+						if((address[0][1] - address[1][1]) > 0 ){
+							right();
+							run(right);
+							direct = 'right';
+						}
+						else
+						{
+							left();
+							run(left);
+							direct = 'left';
+						}
+					}
+					else
+					{
+						if((address[0][0] - address[1][0]) > 0 ){
+							down();
+							run(down);
+							direct = "down";
+						}
+						else
+						{
+							up();
+							run(up);
+							direct = 'up';
+						}
+					}
+
+				}
+				else
+				{
+					alert('咬到自己了');
+					location.reload();
+				}
+			}
+		}
+	},10);
+		
+			
+
+	
+
+</script>
